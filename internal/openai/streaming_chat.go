@@ -66,8 +66,8 @@ func StreamingChat(request ChatRequest) (<-chan StreamingChatResponseChunk, erro
 	go func() {
 		defer resp.Body.Close()
 		for {
-			reader := bufio.NewReader(resp.Body)
-			body, _ := reader.ReadString('\n')
+			chunkReader := bufio.NewReader(resp.Body)
+			body, _ := chunkReader.ReadString('\n')
 			if err != nil {
 				log.Fatalf("Error : %v\n", err)
 				// return err
@@ -90,10 +90,6 @@ func StreamingChat(request ChatRequest) (<-chan StreamingChatResponseChunk, erro
 // TODO: give select, to receive error
 func parseChunk(body string) StreamingChatResponseChunk {
 	trimmed := strings.Split(body, "data: ")
-	// if len(trimmed) < 2 {
-	// 	return StreamingChatResponse{}
-	// }
-
 	chunk := trimmed[1]
 
 	var result StreamingChatResponseChunk
