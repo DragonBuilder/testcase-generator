@@ -91,22 +91,19 @@ func StreamingChat(request ChatRequest, chunks chan<- StreamingChatResponseChunk
 
 // TODO: give select, to receive error
 func parseChunk(body []byte) StreamingChatResponseChunk {
-	chuckReceivedStrArr := strings.Split(string(body), "data: ")
-	for i := range chuckReceivedStrArr {
-		chuckReceivedStrArr[i] = strings.TrimSpace(chuckReceivedStrArr[i])
+	asStrArr := strings.Split(string(body), "data: ")
+	for i := range asStrArr {
+		asStrArr[i] = strings.TrimSpace(asStrArr[i])
 	}
+	asStrArr = asStrArr[:len(asStrArr)-1]
 
-	chuckReceivedStrArr = chuckReceivedStrArr[:len(chuckReceivedStrArr)-1]
-
-	chuckReceivedStr := strings.Join(chuckReceivedStrArr, ",")
-	chuckReceivedStr = strings.TrimLeft(chuckReceivedStr, ",")
-	chuckReceivedStr = fmt.Sprintf("[%s]", chuckReceivedStr)
-
-	// chunk
+	asStr := strings.Join(asStrArr, ",")
+	asStr = strings.TrimLeft(asStr, ",")
+	asStr = fmt.Sprintf("[%s]", asStr)
 
 	result := StreamingChatResponseChunk{}
 
-	err := json.Unmarshal([]byte(chuckReceivedStr), &result)
+	err := json.Unmarshal([]byte(asStr), &result)
 	if err != nil {
 		log.Fatalf("Error : %v\n", err)
 		// return err

@@ -2,12 +2,11 @@ package internal
 
 import (
 	"fmt"
-	"log"
 	"testcase-generator/internal/openai"
 )
 
-func GenerateTestcases(featureExplation string) (string, error) {
-	messages := []openai.Message{
+func testRoleMessages(featureExplation string) []openai.Message {
+	return []openai.Message{
 		{
 			Role:    openai.System,
 			Content: "You are a software tester, your job is to generate testcase scenarios for the following feature.",
@@ -17,11 +16,20 @@ func GenerateTestcases(featureExplation string) (string, error) {
 			Content: featureExplation,
 		},
 	}
+}
 
+func GenerateTestcases(featureExplation string) (string, error) {
+	messages := testRoleMessages(featureExplation)
 	resp, err := openai.Chat(openai.NewChatRequest(messages))
 	if err != nil {
 		return "", fmt.Errorf("error while asking chat completion api : %v", err)
 	}
-	log.Println(resp)
-	return "", nil
+	// log.Println(resp)
+	return resp.Choices[0].Message.Content, nil
+}
+
+func StreamingGenerateTestcases(featureExplation string, stream chan<- openai.StreamingChatResponseChunk) error {
+	messages := testRoleMessages(featureExplation)
+	go openai.StreamingChat(openai.NewChatRequest(messages), stream)
+	return nil
 }
