@@ -50,17 +50,11 @@ func TestStreamingGenerateTestcases(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// if err := StreamingGenerateTestcases(tt.args.featureExplation, tt.args.stream); (err != nil) != tt.wantErr {
-			// 	t.Errorf("StreamingGenerateTestcases() error = %v, wantErr %v", err, tt.wantErr)
-			// }
 			chunks, err := StreamingGenerateTestcases(tt.args.featureExplation)
 			assert.NoError(t, err)
 			for chunk := range chunks {
-				// for _, c := range chunk {
-				// fmt.Println(c.Choices[0].Delta.Content)
-				// t.Log(c.Choices[0].Delta.Content)
+				// t.Log(chunk.Choices[0].Delta.Content)
 				assert.NotNil(t, chunk)
-				// }
 			}
 		})
 	}

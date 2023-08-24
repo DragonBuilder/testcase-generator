@@ -22,7 +22,7 @@ type StreamingChoice struct {
 	FinishReason string             `json:"finish_reason"`
 }
 
-type StreamingChatResponse struct {
+type StreamingChatResponseChunk struct {
 	ID      string            `json:"id"`
 	Object  string            `json:"object"`
 	Created int64             `json:"created"`
@@ -30,7 +30,7 @@ type StreamingChatResponse struct {
 	Choices []StreamingChoice `json:"choices"`
 }
 
-func (r StreamingChatResponse) done() bool {
+func (r StreamingChatResponseChunk) isLast() bool {
 	for _, c := range r.Choices {
 		if c.FinishReason == "stop" {
 			return true
@@ -39,19 +39,8 @@ func (r StreamingChatResponse) done() bool {
 	return false
 }
 
-type StreamingChatResponseChunk []StreamingChatResponse
-
-func (chunk StreamingChatResponseChunk) done() bool {
-	for _, c := range chunk {
-		if c.done() {
-			return true
-		}
-	}
-	return false
-}
-
 // TODO: give select, to receive error
-func StreamingChat(request ChatRequest) (<-chan StreamingChatResponse, error) {
+func StreamingChat(request ChatRequest) (<-chan StreamingChatResponseChunk, error) {
 	client := http.Client{}
 	reqJSON, err := json.Marshal(request)
 	if err != nil {
@@ -73,12 +62,12 @@ func StreamingChat(request ChatRequest) (<-chan StreamingChatResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %v", err)
 	}
-	stream := make(chan StreamingChatResponse)
+	stream := make(chan StreamingChatResponseChunk)
 	go func() {
 		defer resp.Body.Close()
 		for {
 			reader := bufio.NewReader(resp.Body)
-			body, _ := reader.ReadBytes('\n')
+			body, _ := reader.ReadString('\n')
 			if err != nil {
 				log.Fatalf("Error : %v\n", err)
 				// return err
@@ -86,10 +75,10 @@ func StreamingChat(request ChatRequest) (<-chan StreamingChatResponse, error) {
 			// log.Println("received a stream chunk...")
 			// log.Println(string(body))
 
-			resultChunk := parseChunk(body)
+			chunk := parseChunk(body)
 
-			stream <- resultChunk
-			if resultChunk.done() {
+			stream <- chunk
+			if chunk.isLast() {
 				close(stream)
 				return
 			}
@@ -99,15 +88,15 @@ func StreamingChat(request ChatRequest) (<-chan StreamingChatResponse, error) {
 }
 
 // TODO: give select, to receive error
-func parseChunk(body []byte) StreamingChatResponse {
-	trimmed := strings.Split(string(body), "data: ")
+func parseChunk(body string) StreamingChatResponseChunk {
+	trimmed := strings.Split(body, "data: ")
 	// if len(trimmed) < 2 {
 	// 	return StreamingChatResponse{}
 	// }
 
 	chunk := trimmed[1]
 
-	var result StreamingChatResponse
+	var result StreamingChatResponseChunk
 	err := json.Unmarshal([]byte(chunk), &result)
 	if err != nil {
 		log.Fatalf("Error : %v\n", err)
@@ -133,17 +122,3 @@ func parseChunk(body []byte) StreamingChatResponse {
 	// }
 	return result
 }
-
-// func parseChunkIntoJsonString() string {
-// 	chuckReceivedStrArr := strings.Split(string(body), "data: ")
-// 	for i := range chuckReceivedStrArr {
-// 		chuckReceivedStrArr[i] = strings.TrimSpace(chuckReceivedStrArr[i])
-// 	}
-
-// 	chuckReceivedStrArr = chuckReceivedStrArr[:len(chuckReceivedStrArr)-1]
-
-// 	chuckReceivedStr := strings.Join(chuckReceivedStrArr, ",")
-// 	chuckReceivedStr = strings.TrimLeft(chuckReceivedStr, ",")
-// 	chuckReceivedStr = fmt.Sprintf("[%s]", chuckReceivedStr)
-
-// }
