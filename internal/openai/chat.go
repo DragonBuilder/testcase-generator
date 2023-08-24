@@ -28,12 +28,13 @@ type ChatRequest struct {
 	Model       string    `json:"model"`
 	Messages    []Message `json:"messages"`
 	Temperature float64   `json:"temperature"`
+	Stream      bool      `json:"stream"`
 }
 
 type Choice struct {
-	Index   int     `json:"index"`
-	Message Message `json:"message"`
-	Finish  string  `json:"finish_reason"`
+	Index        int     `json:"index"`
+	Message      Message `json:"message"`
+	FinishReason string  `json:"finish_reason"`
 }
 
 type Usage struct {
@@ -51,11 +52,19 @@ type ChatResponse struct {
 	Usage   Usage    `json:"usage"`
 }
 
+// {"id":"chatcmpl-7r1I5PziAUG70qR8Fw5q00KqEpN8X",
+// "object":"chat.completion.chunk",
+// "created":1692870701,
+// "model":"gpt-3.5-turbo-0613",
+// "choices":[{"index":0,"delta":{},"finish_reason":"stop"}]
+// }
+
 func NewChatRequest(messages []Message) ChatRequest {
 	return ChatRequest{
 		Model:       gptModel,
 		Messages:    messages,
 		Temperature: temperature,
+		Stream:      true,
 	}
 }
 
