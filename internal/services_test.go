@@ -15,9 +15,9 @@ func TestGenerateTestcases(t *testing.T) {
 		args args
 	}{
 		{
-			name: "c",
+			name: "Sanity test",
 			args: args{
-				featureExplation: "c",
+				featureExplation: "A REST API to fetch a list of users.",
 			},
 		},
 	}

@@ -14,9 +14,9 @@ const (
 	User      = "user"
 	Assistant = "assistant"
 
-	ChatCompletionsAPI = "https://api.openai.com/v1/chat/completions"
+	chatCompletionsAPI = "https://api.openai.com/v1/chat/completions"
 	temperature        = 0.0
-	GPTModel           = "gpt-3.5-turbo"
+	gptModel           = "gpt-3.5-turbo"
 )
 
 type Message struct {
@@ -53,7 +53,7 @@ type ChatResponse struct {
 
 func NewChatRequest(messages []Message) ChatRequest {
 	return ChatRequest{
-		Model:       GPTModel,
+		Model:       gptModel,
 		Messages:    messages,
 		Temperature: temperature,
 	}
@@ -65,7 +65,7 @@ func Chat(request ChatRequest) (ChatResponse, error) {
 	if err != nil {
 		return ChatResponse{}, fmt.Errorf("error marshaling request json: %v", err)
 	}
-	httpReq, err := http.NewRequest("POST", ChatCompletionsAPI, bytes.NewBuffer(jsonStr))
+	httpReq, err := http.NewRequest("POST", chatCompletionsAPI, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		return ChatResponse{}, fmt.Errorf("error creating request: %v", err)
 	}
