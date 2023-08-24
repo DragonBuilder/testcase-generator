@@ -9,7 +9,6 @@ import (
 func TestStreamingChat(t *testing.T) {
 	type args struct {
 		request ChatRequest
-		// chucks  chan StreamingChatResponseChunk
 	}
 	tests := []struct {
 		name    string
@@ -25,7 +24,6 @@ func TestStreamingChat(t *testing.T) {
 						Content: "Say this is a test!",
 					},
 				}),
-				// chucks: make(chan StreamingChatResponseChunk),
 			},
 			wantErr: false,
 		},
