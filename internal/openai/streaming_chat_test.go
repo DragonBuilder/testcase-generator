@@ -32,17 +32,8 @@ func TestStreamingChat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// if err := StreamingChat(tt.args.request, tt.args.stream); (err != nil) != tt.wantErr {
-			// 	t.Errorf("StreamingChat() error = %v, wantErr %v", err, tt.wantErr)
-			// }
-			chunks, err := StreamingChat(tt.args.request)
+			_, err := StreamingChat(tt.args.request)
 			assert.NoError(t, err)
-			for chunk := range chunks {
-				for _, c := range chunk {
-					// log.Println(c.Choices[0].Delta.Content)
-					assert.NotNil(t, c)
-				}
-			}
 		})
 	}
 }

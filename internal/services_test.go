@@ -56,11 +56,11 @@ func TestStreamingGenerateTestcases(t *testing.T) {
 			chunks, err := StreamingGenerateTestcases(tt.args.featureExplation)
 			assert.NoError(t, err)
 			for chunk := range chunks {
-				for _, c := range chunk {
-					// fmt.Println(c.Choices[0].Delta.Content)
-					// t.Log(c.Choices[0].Delta.Content)
-					assert.NotNil(t, c)
-				}
+				// for _, c := range chunk {
+				// fmt.Println(c.Choices[0].Delta.Content)
+				// t.Log(c.Choices[0].Delta.Content)
+				assert.NotNil(t, chunk)
+				// }
 			}
 		})
 	}

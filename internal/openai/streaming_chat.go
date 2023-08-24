@@ -1,10 +1,10 @@
 package openai
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -51,13 +51,16 @@ func (chunk StreamingChatResponseChunk) done() bool {
 }
 
 // TODO: give select, to receive error
-func StreamingChat(request ChatRequest) (<-chan StreamingChatResponseChunk, error) {
+func StreamingChat(request ChatRequest) (<-chan StreamingChatResponse, error) {
 	client := http.Client{}
-	jsonStr, err := json.Marshal(request)
+	reqJSON, err := json.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling request json: %v", err)
 	}
-	httpReq, err := http.NewRequest("POST", chatCompletionsAPI, bytes.NewBuffer(jsonStr))
+	reqBody := bytes.NewBuffer(reqJSON)
+	// log.Printf("Request body: %s", reqBody.String())
+
+	httpReq, err := http.NewRequest("POST", chatCompletionsAPI, reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
@@ -65,21 +68,23 @@ func StreamingChat(request ChatRequest) (<-chan StreamingChatResponseChunk, erro
 	httpReq.Header = http.Header{
 		"Authorization": {fmt.Sprintf("Bearer %s", config.Config.OpenAI_API_Key)},
 		"Content-Type":  {"application/json"},
-		"Accept":        {"text/event-stream"},
 	}
 	resp, err := client.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %v", err)
 	}
-	stream := make(chan StreamingChatResponseChunk)
+	stream := make(chan StreamingChatResponse)
 	go func() {
 		defer resp.Body.Close()
 		for {
-			body, err := io.ReadAll(resp.Body)
+			reader := bufio.NewReader(resp.Body)
+			body, _ := reader.ReadBytes('\n')
 			if err != nil {
 				log.Fatalf("Error : %v\n", err)
 				// return err
 			}
+			// log.Println("received a stream chunk...")
+			// log.Println(string(body))
 
 			resultChunk := parseChunk(body)
 
@@ -94,24 +99,38 @@ func StreamingChat(request ChatRequest) (<-chan StreamingChatResponseChunk, erro
 }
 
 // TODO: give select, to receive error
-func parseChunk(body []byte) StreamingChatResponseChunk {
-	asStrArr := strings.Split(string(body), "data: ")
-	for i := range asStrArr {
-		asStrArr[i] = strings.TrimSpace(asStrArr[i])
-	}
-	asStrArr = asStrArr[:len(asStrArr)-1]
+func parseChunk(body []byte) StreamingChatResponse {
+	trimmed := strings.Split(string(body), "data: ")
+	// if len(trimmed) < 2 {
+	// 	return StreamingChatResponse{}
+	// }
 
-	asStr := strings.Join(asStrArr, ",")
-	asStr = strings.TrimLeft(asStr, ",")
-	asStr = fmt.Sprintf("[%s]", asStr)
+	chunk := trimmed[1]
 
-	result := StreamingChatResponseChunk{}
-
-	err := json.Unmarshal([]byte(asStr), &result)
+	var result StreamingChatResponse
+	err := json.Unmarshal([]byte(chunk), &result)
 	if err != nil {
 		log.Fatalf("Error : %v\n", err)
 		// return err
 	}
+
+	// asStrArr := strings.Split(string(body), "data: ")
+	// for i := range asStrArr {
+	// 	asStrArr[i] = strings.TrimSpace(asStrArr[i])
+	// }
+	// asStrArr = asStrArr[:len(asStrArr)-1]
+
+	// asStr := strings.Join(asStrArr, ",")
+	// asStr = strings.TrimLeft(asStr, ",")
+	// asStr = fmt.Sprintf("[%s]", asStr)
+
+	// result := StreamingChatResponseChunk{}
+
+	// err := json.Unmarshal([]byte(asStr), &result)
+	// if err != nil {
+	// 	log.Fatalf("Error : %v\n", err)
+	// 	// return err
+	// }
 	return result
 }
 
