@@ -1,0 +1,3 @@
+#!/bin/bash
+export $(xargs < ./scripts/env/devtest.env)
+go test -v ./...

@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"log"
@@ -10,15 +10,16 @@ var Config AppConfig
 var readCfgOnce sync.Once
 
 type AppConfig struct {
-	Port      string `json:"-"`
-	OpenAIKey string `json:"-"`
+	Port           string `json:"-"`
+	OpenAI_API_Key string `json:"-"`
 }
 
-func init() {
+func Init() {
 	readCfgOnce.Do(func() {
 		log.Println("Setting up config...")
 		Config = AppConfig{
-			Port: os.Getenv("PORT"),
+			Port:           os.Getenv("PORT"),
+			OpenAI_API_Key: os.Getenv("OPENAI_API_KEY"),
 		}
 	})
 }
