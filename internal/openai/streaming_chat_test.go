@@ -9,7 +9,7 @@ import (
 func TestStreamingChat(t *testing.T) {
 	type args struct {
 		request ChatRequest
-		chucks  chan StreamingChatResponseChunk
+		// chucks  chan StreamingChatResponseChunk
 	}
 	tests := []struct {
 		name    string
@@ -25,7 +25,7 @@ func TestStreamingChat(t *testing.T) {
 						Content: "Say this is a test!",
 					},
 				}),
-				chucks: make(chan StreamingChatResponseChunk),
+				// chucks: make(chan StreamingChatResponseChunk),
 			},
 			wantErr: false,
 		},
@@ -35,8 +35,9 @@ func TestStreamingChat(t *testing.T) {
 			// if err := StreamingChat(tt.args.request, tt.args.stream); (err != nil) != tt.wantErr {
 			// 	t.Errorf("StreamingChat() error = %v, wantErr %v", err, tt.wantErr)
 			// }
-			go StreamingChat(tt.args.request, tt.args.chucks)
-			for chunk := range tt.args.chucks {
+			chunks, err := StreamingChat(tt.args.request)
+			assert.NoError(t, err)
+			for chunk := range chunks {
 				for _, c := range chunk {
 					// log.Println(c.Choices[0].Delta.Content)
 					assert.NotNil(t, c)

@@ -51,15 +51,15 @@ func (chunk StreamingChatResponseChunk) done() bool {
 }
 
 // TODO: give select, to receive error
-func StreamingChat(request ChatRequest, chunks chan<- StreamingChatResponseChunk) error {
+func StreamingChat(request ChatRequest) (<-chan StreamingChatResponseChunk, error) {
 	client := http.Client{}
 	jsonStr, err := json.Marshal(request)
 	if err != nil {
-		return fmt.Errorf("error marshaling request json: %v", err)
+		return nil, fmt.Errorf("error marshaling request json: %v", err)
 	}
 	httpReq, err := http.NewRequest("POST", chatCompletionsAPI, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		return fmt.Errorf("error creating request: %v", err)
+		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 
 	httpReq.Header = http.Header{
@@ -69,24 +69,28 @@ func StreamingChat(request ChatRequest, chunks chan<- StreamingChatResponseChunk
 	}
 	resp, err := client.Do(httpReq)
 	if err != nil {
-		return fmt.Errorf("error sending request: %v", err)
+		return nil, fmt.Errorf("error sending request: %v", err)
 	}
-	defer resp.Body.Close()
+	stream := make(chan StreamingChatResponseChunk)
+	go func() {
+		defer resp.Body.Close()
+		for {
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				log.Fatalf("Error : %v\n", err)
+				// return err
+			}
 
-	for {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return err
+			resultChunk := parseChunk(body)
+
+			stream <- resultChunk
+			if resultChunk.done() {
+				close(stream)
+				return
+			}
 		}
-
-		resultChunk := parseChunk(body)
-
-		chunks <- resultChunk
-		if resultChunk.done() {
-			close(chunks)
-			return nil
-		}
-	}
+	}()
+	return stream, nil
 }
 
 // TODO: give select, to receive error

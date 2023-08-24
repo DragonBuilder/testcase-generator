@@ -28,8 +28,11 @@ func GenerateTestcases(featureExplation string) (string, error) {
 	return resp.Choices[0].Message.Content, nil
 }
 
-func StreamingGenerateTestcases(featureExplation string, stream chan<- openai.StreamingChatResponseChunk) error {
+func StreamingGenerateTestcases(featureExplation string) (<-chan openai.StreamingChatResponseChunk, error) {
 	messages := testRoleMessages(featureExplation)
-	go openai.StreamingChat(openai.NewChatRequest(messages), stream)
-	return nil
+	stream, err := openai.StreamingChat(openai.NewChatRequest(messages))
+	if err != nil {
+		return nil, fmt.Errorf("error while asking chat completion api streaming : %v", err)
+	}
+	return stream, nil
 }
