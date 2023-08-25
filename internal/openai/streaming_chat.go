@@ -65,13 +65,15 @@ func StreamingChat(messages []Message) (<-chan StreamingChatResponseChunk, error
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %v", err)
 	}
+	chunkReader := bufio.NewReader(resp.Body)
 	stream := make(chan StreamingChatResponseChunk)
 	go func() {
 		defer resp.Body.Close()
 		for {
-			chunkReader := bufio.NewReader(resp.Body)
-			body, _, _ := chunkReader.ReadLine()
-			// log.Printf("Chuck received: %s\n", string(body))
+			body, err := chunkReader.ReadBytes('\n')
+			if err != nil {
+				log.Fatalln(err)
+			}
 
 			chunk := parseChunk(body)
 
@@ -80,6 +82,9 @@ func StreamingChat(messages []Message) (<-chan StreamingChatResponseChunk, error
 				close(stream)
 				break
 			}
+
+			// discard the next `\n`, since it's part of the `\n\n` SSE termination.
+			chunkReader.ReadBytes('\n')
 		}
 	}()
 	return stream, nil
@@ -88,13 +93,13 @@ func StreamingChat(messages []Message) (<-chan StreamingChatResponseChunk, error
 // TODO: give select, to receive error
 func parseChunk(body []byte) StreamingChatResponseChunk {
 	data := bytes.TrimPrefix(body, []byte("data: "))
+	log.Printf("Cleaned %s\n", data)
 	var result StreamingChatResponseChunk
 	err := json.Unmarshal(data, &result)
 	if err != nil {
 		log.Fatalf("Error : %v\n", err)
 		// return err
 	}
-
 	// asStrArr := strings.Split(string(body), "data: ")
 	// for i := range asStrArr {
 	// 	asStrArr[i] = strings.TrimSpace(asStrArr[i])
