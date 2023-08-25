@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"testcase-generator/internal/config"
 )
 
 type StreamingChatDelta struct {
-	Content string `json:"content"`
+	Role         string            `json:"role,omitempty"`
+	Content      string            `json:"content"`
+	FunctionCall map[string]string `json:"function_call,omitempty"`
 }
 
 type StreamingChoice struct {
@@ -57,6 +58,8 @@ func StreamingChat(messages []Message) (<-chan StreamingChatResponseChunk, error
 	httpReq.Header = http.Header{
 		"Authorization": {fmt.Sprintf("Bearer %s", config.Config.OpenAI_API_Key)},
 		"Content-Type":  {"application/json"},
+		"Cache-Control": {"no-cache"},
+		"Connection":    {"keep-alive"},
 	}
 	resp, err := client.Do(httpReq)
 	if err != nil {
@@ -67,13 +70,8 @@ func StreamingChat(messages []Message) (<-chan StreamingChatResponseChunk, error
 		defer resp.Body.Close()
 		for {
 			chunkReader := bufio.NewReader(resp.Body)
-			body, _ := chunkReader.ReadString('\n')
-			if err != nil {
-				log.Fatalf("Error : %v\n", err)
-				// return err
-			}
-			// log.Println("received a stream chunk...")
-			// log.Println(body)
+			body, _, _ := chunkReader.ReadLine()
+			// log.Printf("Chuck received: %s\n", string(body))
 
 			chunk := parseChunk(body)
 
@@ -88,12 +86,10 @@ func StreamingChat(messages []Message) (<-chan StreamingChatResponseChunk, error
 }
 
 // TODO: give select, to receive error
-func parseChunk(body string) StreamingChatResponseChunk {
-	trimmed := strings.Split(body, "data: ")
-	chunk := trimmed[1]
-
+func parseChunk(body []byte) StreamingChatResponseChunk {
+	data := bytes.TrimPrefix(body, []byte("data: "))
 	var result StreamingChatResponseChunk
-	err := json.Unmarshal([]byte(chunk), &result)
+	err := json.Unmarshal(data, &result)
 	if err != nil {
 		log.Fatalf("Error : %v\n", err)
 		// return err
