@@ -36,9 +36,10 @@ func StartStreamingGenerateTestcaseSenariosHandler(w http.ResponseWriter, r *htt
 
 	w.Header().Set("Content-Type", "text/event-stream")
 
-	stream, _ := StreamingGenerateTestcases("A REST API to fetch a list of users.")
+	// stream, _ := StreamingGenerateTestcases("A REST API to fetch a list of users.")
+	stream, _ := StreamingGenerateTestcases("What are you?")
 	for chunk := range stream {
-		log.Println(chunk.Choices[0].Delta.Content)
+		// fmt.Print(chunk.Choices[0].Delta.Content)
 		content := fmt.Sprintf("data: %s\n\n", chunk.Choices[0].Delta.Content)
 
 		// log.Println(content)
