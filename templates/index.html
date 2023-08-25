@@ -10,17 +10,15 @@
         integrity="sha384-zUfuhFKKZCbHTY6aRR46gxiqszMk5tcHjsVFxnUo8VMus4kHGVdIYVbOYYNlKmHV"
         crossorigin="anonymous"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
-
 </head>
 
 <body>
     <h1>Testcase Generator</h1>
-    <label for="feature-explanation">Give a short explanation of the feature: </label>
-    <form hx-post="/generate/scenarios">
-        <!-- <textarea id="feature-explanation" rows="4" cols="50" >
-        </textarea> -->
+    <form hx-post="/generate/scenarios/streaming", hx-swap="outerHTML" hx-target="#scenarios">
+        <label for="feature-explanation">Give a short explanation of the feature: </label>
         <input id="feature-explanation" name="explanation">
     </form>
+    <div id="scenarios"></div>
 </body>
 
 </html>
