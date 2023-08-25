@@ -21,11 +21,11 @@ func StreamingGenerateTestcaseSenariosHandler(w http.ResponseWriter, r *http.Req
 	tmpl.Execute(w, nil)
 }
 
-const x = `
-<div hx-ext="sse" sse-swap="message" hx-swap="beforeend">
-    %s
-</div>
-`
+// const x = `
+// <div hx-ext="sse" sse-swap="message" hx-swap="beforeend">
+//     %s
+// </div>
+// `
 
 func StartStreamingGenerateTestcaseSenariosHandler(w http.ResponseWriter, r *http.Request) {
 	flusher, ok := w.(http.Flusher)
