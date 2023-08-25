@@ -20,7 +20,7 @@ func testRoleMessages(featureExplation string) []openai.Message {
 
 func GenerateTestcases(featureExplation string) (string, error) {
 	messages := testRoleMessages(featureExplation)
-	resp, err := openai.Chat(openai.NewChatRequest(messages))
+	resp, err := openai.Chat(messages)
 	if err != nil {
 		return "", fmt.Errorf("error while asking chat completion api : %v", err)
 	}
@@ -30,7 +30,7 @@ func GenerateTestcases(featureExplation string) (string, error) {
 
 func StreamingGenerateTestcases(featureExplation string) (<-chan openai.StreamingChatResponseChunk, error) {
 	messages := testRoleMessages(featureExplation)
-	stream, err := openai.StreamingChat(openai.NewChatRequest(messages))
+	stream, err := openai.StreamingChat(messages)
 	if err != nil {
 		return nil, fmt.Errorf("error while asking chat completion api streaming : %v", err)
 	}

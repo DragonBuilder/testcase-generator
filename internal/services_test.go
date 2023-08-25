@@ -54,7 +54,7 @@ func TestStreamingGenerateTestcases(t *testing.T) {
 			assert.NoError(t, err)
 			for chunk := range chunks {
 				// t.Log(chunk.Choices[0].Delta.Content)
-				assert.NotNil(t, chunk)
+				assert.NotEmpty(t, chunk)
 			}
 		})
 	}

@@ -59,16 +59,17 @@ type ChatResponse struct {
 // "choices":[{"index":0,"delta":{},"finish_reason":"stop"}]
 // }
 
-func NewChatRequest(messages []Message) ChatRequest {
+func NewChatRequest(messages []Message, stream bool) ChatRequest {
 	return ChatRequest{
 		Model:       gptModel,
 		Messages:    messages,
 		Temperature: temperature,
-		Stream:      true,
+		Stream:      stream,
 	}
 }
 
-func Chat(request ChatRequest) (ChatResponse, error) {
+func Chat(messages []Message) (ChatResponse, error) {
+	request := NewChatRequest(messages, false)
 	client := http.Client{}
 	jsonStr, err := json.Marshal(request)
 	if err != nil {

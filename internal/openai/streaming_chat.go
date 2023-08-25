@@ -17,7 +17,6 @@ type StreamingChatDelta struct {
 
 type StreamingChoice struct {
 	Index        int                `json:"index"`
-	Message      Message            `json:"message"`
 	Delta        StreamingChatDelta `json:"delta"`
 	FinishReason string             `json:"finish_reason"`
 }
@@ -40,7 +39,8 @@ func (r StreamingChatResponseChunk) isLast() bool {
 }
 
 // TODO: give select, to receive error
-func StreamingChat(request ChatRequest) (<-chan StreamingChatResponseChunk, error) {
+func StreamingChat(messages []Message) (<-chan StreamingChatResponseChunk, error) {
+	request := NewChatRequest(messages, true)
 	client := http.Client{}
 	reqJSON, err := json.Marshal(request)
 	if err != nil {
@@ -73,14 +73,14 @@ func StreamingChat(request ChatRequest) (<-chan StreamingChatResponseChunk, erro
 				// return err
 			}
 			// log.Println("received a stream chunk...")
-			// log.Println(string(body))
+			// log.Println(body)
 
 			chunk := parseChunk(body)
 
 			stream <- chunk
 			if chunk.isLast() {
 				close(stream)
-				return
+				break
 			}
 		}
 	}()
