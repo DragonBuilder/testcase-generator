@@ -93,13 +93,14 @@ func StreamingChat(messages []Message) (<-chan StreamingChatResponseChunk, error
 // TODO: give select, to receive error
 func parseChunk(body []byte) StreamingChatResponseChunk {
 	data := bytes.TrimPrefix(body, []byte("data: "))
-	log.Printf("Cleaned %s\n", data)
+	// log.Printf("Cleaned %s\n", data)
+
 	var result StreamingChatResponseChunk
 	err := json.Unmarshal(data, &result)
 	if err != nil {
 		log.Fatalf("Error : %v\n", err)
-		// return err
 	}
+
 	// asStrArr := strings.Split(string(body), "data: ")
 	// for i := range asStrArr {
 	// 	asStrArr[i] = strings.TrimSpace(asStrArr[i])
