@@ -18,10 +18,10 @@ func GenerateTestcaseSenariosHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.PostFormValue("explanation"))
 }
 
-func StreamingGenerateTestcaseSenariosHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("templates/_streaming_chat.html"))
-	tmpl.Execute(w, nil)
-}
+// func StreamingGenerateTestcaseSenariosHandler(w http.ResponseWriter, r *http.Request) {
+// 	tmpl := template.Must(template.ParseFiles("templates/_streaming_chat.html"))
+// 	tmpl.Execute(w, nil)
+// }
 
 // const x = `
 // <div hx-ext="sse" sse-swap="message" hx-swap="beforeend">
@@ -29,7 +29,7 @@ func StreamingGenerateTestcaseSenariosHandler(w http.ResponseWriter, r *http.Req
 // </div>
 // `
 
-func StartStreamingGenerateTestcaseSenariosHandler(w http.ResponseWriter, r *http.Request) {
+func StreamingGenerateTestcaseSenariosHandler(w http.ResponseWriter, r *http.Request) {
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		os.Stderr.WriteString(fmt.Sprintf("Error reading request body: %v", err))
