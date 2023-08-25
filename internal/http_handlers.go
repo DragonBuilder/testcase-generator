@@ -40,7 +40,7 @@ func StartStreamingGenerateTestcaseSenariosHandler(w http.ResponseWriter, r *htt
 	stream, _ := StreamingGenerateTestcases("What are you?")
 	for chunk := range stream {
 		// fmt.Print(chunk.Choices[0].Delta.Content)
-		content := fmt.Sprintf("data: %s\n\n", chunk.Choices[0].Delta.Content)
+		content := fmt.Sprintf("data: [%s]\n\n", chunk.Choices[0].Delta.Content)
 
 		// log.Println(content)
 		fmt.Fprint(w, content)

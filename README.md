@@ -5,13 +5,13 @@ Simply explain what the feature is expected to do, and boom you should ideally g
 
 ## Setup
 
-    - Inside `scripts/env`` folder, clone the `env.sample` as `development.env` and fill the env vars.
+    - Inside `scripts/env` folder, clone the `env.sample` as `development.env` and fill the env vars.
     - Run  `make deploy_local`. Will start-up the server at `$PORT`.
 
 ## How to test?
     - UI doesn't work yet, use :-
 
-        `curl -N localhost:11000/generate/scenarios/streaming` for the time being. 
+        `curl -Ns localhost:11000/start/generate/scenarios/streaming | python scripts/py/print_resp.py` for the time being. 
         Which returns a response for `A REST API to fetch a list of users.` prompt.
 
     - Change the prompt inside `StartStreamingGenerateTestcaseSenariosHandler` function 
